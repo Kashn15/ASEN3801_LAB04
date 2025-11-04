@@ -41,7 +41,7 @@ psi = 0;
 theta = 0;
 phi = 0;
 u_e = 0;
-v_e = 0;
+v_e = 5;
 w_e = 0;
 p = 0;
 q = 0;
@@ -53,7 +53,12 @@ var = [x_e; y_e; z_e; psi; theta; phi; u_e; v_e; w_e; p; q; r];
 odefun = @(t,x) QuadrotorEOM(t, x, g, m, I, d, km, vu, mu, motor_forces_hover);
 [t, X] = ode45(odefun, [0, t], var);
 
-PlotAircraftSim(t,X,motor_forces_hover,[1,2,3,4,5,6],'b')
+Zc = -(m*g/4);   % equals -m*g at hover
+Lc = 0; Mc = 0; Nc = 0;
+
+U = repmat([Zc Lc Mc Nc], length(t), 1);   % size = length(t) x 4
+
+PlotAircraftSim(t,X,U,[1,2,3,4,5,6],'b')
 
 
 %% Functions
@@ -141,6 +146,8 @@ Lc = d/sqrt(2) * (-f(1) - f(2) + f(3) + f(4));
 Mc = d/sqrt(2) * ( f(1) - f(2) - f(3) + f(4));
 Nc = km * ( f(1) - f(2) + f(3) - f(4));
 
+
+
 % Forces and Moments
 F_thrust = [0; 0; Zc];                 % rotor resultant along body z
 F_g = m * (R_BE * [0;0;g]);       % gravity expressed in body
@@ -156,7 +163,7 @@ uvw_dot  = (F_tot - cross(omega, m*Vb)) / m;
 pqr_dot  = I \ (M_tot - cross(omega, I*omega)); % Cross() is MatLab's cross function
 
 
-var_dot = [posit_dot; uvw_dot; eul_dot;pqr_dot]
+var_dot = [posit_dot; uvw_dot; eul_dot;pqr_dot];
 
 end
 

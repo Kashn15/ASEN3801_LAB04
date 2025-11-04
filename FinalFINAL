@@ -7,8 +7,8 @@ RSdata = load('RSdata_nocontrol.mat');
 
 % Initialization
 t = 10; % Period [s]
-fig = [101, 102, 103, 104, 105, 106];
-col = ['--b','--r','--g'];
+fig = [1,2,3,4,5,6];
+col = '-b';
 
 motor_forces = zeros(4, 1); % Initialize motor forces vector
 
@@ -34,42 +34,41 @@ Nc = 0;
 x_e = 0;
 y_e = 0;
 z_e = 0;
-psi = 0;
-theta = 0;
 phi = 0;
+theta = 0;
+psi = 0;
 u_e = 0;
-v_e = 0;
+v_e = 5;
 w_e = 0;
 p = 0;
 q = 0;
 r = 0;
 
-var = [x_e; y_e; z_e; psi; theta; phi; u_e; v_e; w_e; p; q; r];
+var = [x_e; y_e; z_e; phi; theta; psi; u_e; v_e; w_e; p; q; r];
 
 % ODE function run
-odefun = @(t,x) QuadrotorEOMwoAERO(t, x, g, m, I, d, km, vu, mu, motor_forces_hover);
+odefun = @(t,x) QuadrotorEOM(t, x, g, m, I, d, km, vu, mu, motor_forces_hover);
 [t, X] = ode45(odefun, [0, t], var);
 
 U = repmat([Zc Lc Mc Nc], length(t), 1); % size = length(t) x 4
 
-PlotAircraftSim(t,X,U,[1,2,3,4,5,6],'b')
-
+PlotAircraftSim(t,X,U,fig,col)
 
 %% Functions
 
 % Rotation Matrix
-function R_EB = Rot_Mat(psi, theta, phi)
+function R_EB = Rot_Mat(phi, theta, psi)
 
-R1 = [cos(theta)*cos(phi), sin(psi)*sin(theta)*cos(phi)-cos(psi)*sin(phi), cos(psi)*sin(theta)*cos(phi)+sin(psi)*sin(phi)];
-R2 = [cos(theta)*sin(phi), sin(psi)*sin(theta)*sin(phi)+cos(psi)*cos(phi), cos(psi)*sin(theta)*sin(phi)-sin(psi)*cos(phi)];
-R3 = [-sin(theta), sin(psi)*cos(theta), cos(psi)*cos(theta)];
+R1 = [cos(theta)*cos(psi), sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi), cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi)];
+R2 = [cos(theta)*sin(psi), sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi), cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi)];
+R3 = [-sin(theta), sin(phi)*cos(theta), cos(phi)*cos(theta)];
 
 R_EB = [R1; R2; R3];
 
 end
 
 % Rotational Kinematics
-function eul_dot = euler_kinematics(psi, theta, phi, pqr)
+function eul_dot = euler_kinematics(phi, theta, psi, pqr)
 p = pqr(1); 
 q = pqr(2); 
 r = pqr(3);
@@ -112,9 +111,9 @@ function var_dot = QuadrotorEOM(t, var, g, m, I, d, km, vu, mu, motor_forces)
 x = var(1); 
 y = var(2); 
 z = var(3);
-psi = var(4); 
+phi = var(4); 
 theta = var(5); 
-phi = var(6);
+psi = var(6);
 u = var(7); 
 v = var(8); 
 w = var(9);
@@ -127,7 +126,7 @@ F_aero = -vu * [u^2; v^2; w^2]; % N
 M_aero = -mu * [p^2; q^2; r^2]; % N*m
 
 % Rotation matrices
-R_EB = Rot_Mat(psi,theta,phi);    % body -> earth
+R_EB = Rot_Mat(phi,theta,psi);    % body -> earth
 R_BE = R_EB.';                    % earth -> body
 
 omega = [p;q;r];
@@ -148,23 +147,32 @@ M_tot = [Lc; Mc; Nc] + M_aero;
 
 % Kinematics
 posit_dot = R_EB * Vb;
-eul_dot = euler_kinematics(psi,theta,phi,[p;q;r]);
+eul_dot = euler_kinematics(psi,theta,phi, omega);
 
 % Dynamics
 uvw_dot  = (F_tot - cross(omega, m*Vb)) / m;
 pqr_dot  = I \ (M_tot - cross(omega, I*omega)); % Cross() is MatLab's cross function
 
-var_dot = [posit_dot; uvw_dot; eul_dot;pqr_dot];
+%var_dot = [posit_dot; uvw_dot; eul_dot; pqr_dot];
+var_dot = [posit_dot; eul_dot; uvw_dot; pqr_dot];
 
 end
 
 %Quadrotor EOM Linearized
 function var_dot = QuadrotorEOM_Linearized(t, var, g, m, I, deltaFc, deltaGc)
 %State Vector
-x = var(1); y = var(2); z = var(3);
-phi = var(4); theta = var(5); psi = var(6);
-u = var(7); v = var(8); w = var(9);
-p = var(10); q = var(11); r = var(12);
+x = var(1); 
+y = var(2); 
+z = var(3);
+phi = var(4); 
+theta = var(5); 
+psi = var(6);
+u = var(7); 
+v = var(8); 
+w = var(9);
+p = var(10); 
+q = var(11); 
+r = var(12);
 
 %Derivatives
 x_dot = u; y_dot = v; z_dot = w;
@@ -173,6 +181,11 @@ u_dot = -g*theta; v_dot = g*phi; w_dot = deltaFc*(1/m);
 p_dot = (1/I(1))*deltaGc(1); q_dot = (1/I(2))*deltaGc(2); r_dot = (1/I(3))*deltaGc(3);
 
 var_dot = [x_dot,y_dot,z_dot;phi_dot,theta_dot,psi_dot;u_dot,v_dot,w_dot;p_dot,q_dot,r_dot];
+
+end
+
+%Plot function
+function PlotAircraftSim(time, aircraft_state_array, control_input_array,fig, col)
 
 end
 

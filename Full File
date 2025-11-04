@@ -156,7 +156,7 @@ uvw_dot  = (F_tot - cross(omega, m*Vb)) / m;
 pqr_dot  = I \ (M_tot - cross(omega, I*omega)); % Cross() is MatLab's cross function
 
 
-var_dot = [posit_dot; eul_dot; uvw_dot; pqr_dot];
+var_dot = [posit_dot; uvw_dot; eul_dot;pqr_dot]
 
 end
 

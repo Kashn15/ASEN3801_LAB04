@@ -49,9 +49,6 @@ PlotAircraftSim(t1.', X1.', U1, figs, 'b-');   % nonlinear open-loop
 PlotAircraftSim(t2.', X2.', U2, figs, 'r--');  % linear model
 PlotAircraftSim(t3.', X3.', U3, figs, 'k-.');  % rate-damped
 
-% 2.1 Legend
-%legend('Nonlinearized','Start','End','Linearized');
-
 % 2.5 Legend
 figure(figs(6)); ax = gca;
 hLines = findobj(ax,'Type','line','Tag','trajLine');
@@ -67,3 +64,59 @@ if ~isempty(hLines)
                  'Box','off','Interpreter','none');
     set(lgd,'AutoUpdate','off');                      
 end
+
+%export_case_png(figs, 'Plots/2.1a', 'a');
+%export_case_png(figs, 'Plots/2.1b', 'b');
+%export_case_png(figs, 'Plots/2.1c', 'c');
+%export_case_png(figs, 'Plots/2.1d', 'd');
+%export_case_png(figs, 'Plots/2.1e', 'e');
+%export_case_png(figs, 'Plots/2.1f', 'f');
+
+%export_case_png(figs, 'Plots/2.5d', 'd');
+%export_case_png(figs, 'Plots/2.5e', 'e');
+export_case_png(figs, 'Plots/2.5f', 'f');
+
+
+function export_case_png(figs, outdir, suffix)
+% figs: e.g., (1:6).', outdir: 'Plots/2.1a', suffix: 'a'
+names = {'Pos','Euler','Vel','Angular','Control','3D'};
+
+if ~exist(outdir,'dir'), mkdir(outdir); end
+dpi = 350;
+
+for i = 1:numel(figs)
+    f = figure(figs(i));
+    set(f,'Color','w');
+    set(findall(f,'-property','FontSize'),'FontSize',12);
+    set(findall(f,'Type','line'), 'LineWidth',1.2);
+
+    fname = fullfile(outdir, sprintf('%s_%s.png', names{i}, suffix));
+
+    % Preferred options
+    baseOpts = {'ContentType','image','BackgroundColor','white','Resolution',dpi};
+
+    % Try new API (has Bounds/Padding)
+    try
+        exportgraphics(f, fname, baseOpts{:}, 'Bounds','tight', 'Padding',0);
+        continue
+    catch
+        % fall through
+    end
+
+    % Try without Bounds/Padding (older MATLAB)
+    try
+        exportgraphics(f, fname, baseOpts{:});
+        continue
+    catch
+        % fall through
+    end
+
+    % Ancient fallback
+    try
+        print(f, fname, '-dpng', sprintf('-r%d',dpi));
+    catch ME
+        warning('Failed to export %s: %s', fname, ME.message);
+    end
+end
+end
+

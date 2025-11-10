@@ -68,72 +68,34 @@ end
 % 6) 3D Plot of Aircraft Position
 % 3D Plot of Aircraft Position
 
-% 3D for 2.1
-    % figure(fig(6));
-    % x = Inertial_pos(1,:);           % 1xN
-    % y = Inertial_pos(2,:);           % 1xN
-    % z = -Inertial_pos(3,:);          % positive up
-    % 
-    % plot3(x, y, z, col, 'LineWidth', 1.2); hold on; grid on
-    % 
-    % % Start/end markers
-    % plot3(x(1),   y(1),   z(1),  'go', 'MarkerFaceColor','g')
-    % plot3(x(end), y(end), z(end),'mo', 'MarkerFaceColor','m')
-    % 
-    % xlabel('X (m)'); ylabel('Y (m)'); zlabel('Z (m)')
-    % title('3D Trajectory')
-    % 
-    % % Compute spans and centers
-    % rx = max(x) - min(x);  cx = 0.5*(max(x)+min(x));
-    % ry = max(y) - min(y);  cy = 0.5*(max(y)+min(y));
-    % rz = max(z) - min(z);  cz = 0.5*(max(z)+min(z));
-    % 
-    % % Avoid zero-span edge cases
-    % if rx==0, rx = eps; end
-    % if ry==0, ry = eps; end
-    % if rz==0, rz = eps; end
-    % 
-    % % Make a cube: same numeric half-span on all axes
-    % smax = max([rx ry rz]);
-    % h = 0.5*smax;
-    % xlim([cx - h, cx + h])
-    % ylim([cy - h, cy + h])
-    % zlim([cz - h, cz + h])
-    % 
-    % % Equal data units and a stable 3D box
-    % daspect([1 1 1])   % 1 meter on X = 1 meter on Y = 1 meter on Z
-    % axis vis3d         % keep ratios fixed when rotating
-    % view(45, 25)
-
- % 3D for 2.5
     figure(fig(6))
     ax = gca; hold(ax, 'on'); grid(ax, 'on'); box(ax, 'on');
-    
+
     x = Inertial_pos(1,:);
     y = Inertial_pos(2,:);
     z = -Inertial_pos(3,:);   % positive up
-    
+
     % Display tolerances
     minCube  = 0.1;     % [m] minimum cube edge so tiny drift doesn't fill the screen
     deadband = 1e-4;     % [m] values smaller than this are treated as zero for plotting
-    
-    
+
+
     % Visually "snap" tiny motion to zero
     if (max(x)-min(x)) < deadband, x = x*0 + mean(x); end
     if (max(y)-min(y)) < deadband, y = y*0 + mean(y); end
     if (max(z)-min(z)) < deadband, z = z*0 + mean(z); end
-    
+
     % Trajectory
     hLine = plot3(ax, x, y, z, col, 'LineWidth', 1.6, 'Tag','trajLine');
-    
+
     % Start/end markers match line color, hidden from legend
     c = get(hLine,'Color');
     plot3(ax, x(1),   y(1),   z(1),  'o', 'MarkerEdgeColor', c, 'MarkerFaceColor', c, 'MarkerSize', 6, 'HandleVisibility','off', 'Tag','trajMarker');
     plot3(ax, x(end), y(end), z(end), 's', 'MarkerEdgeColor', c, 'MarkerFaceColor', c, 'MarkerSize', 6, 'HandleVisibility','off', 'Tag','trajMarker');
-    
+
     xlabel(ax,'X (m)'); ylabel(ax,'Y (m)'); zlabel(ax,'Z (m)');
     title(ax,'3D Trajectory (start circle, end square)')
-    
+
     % Combined ranges across everything already plotted
     if strcmp(get(ax,'XLimMode'),'auto'), XL = [min(x) max(x)]; else, XL = xlim(ax); end
     if strcmp(get(ax,'YLimMode'),'auto'), YL = [min(y) max(y)]; else, YL = ylim(ax); end
@@ -141,16 +103,16 @@ end
     XL = [min([XL(1) min(x)]), max([XL(2) max(x)])];
     YL = [min([YL(1) min(y)]), max([YL(2) max(y)])];
     ZL = [min([ZL(1) min(z)]), max([ZL(2) max(z)])];
-    
+
     % Avoid zero-span weirdness
     if XL(1)==XL(2), XL = XL + [-eps eps]; end
     if YL(1)==YL(2), YL = YL + [-eps eps]; end
     if ZL(1)==ZL(2), ZL = ZL + [-eps eps]; end
-    
+
     % Make a cube with a minimum edge length
     cx = mean(XL); cy = mean(YL); cz = mean(ZL);
     h  = 0.5 * max([XL(2)-XL(1), YL(2)-YL(1), ZL(2)-ZL(1), minCube]);
-    
+
     xlim([cx-h, cx+h]); ylim([cy-h, cy+h]); zlim([cz-h, cz+h]);
     daspect([1 1 1]);  
     view(45,25);

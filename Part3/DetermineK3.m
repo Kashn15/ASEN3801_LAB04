@@ -2,9 +2,6 @@ clc;
 clear;
 close all;
 
-clear; clc; close all;
-
-
 k1 = 9.86e-04;  %Gains from 3.1
 k2 = 0.0017;  
 k3 = linspace(0, 0.0001, 1000); %Range of values for k3
@@ -25,7 +22,7 @@ for i = 1:length(k3)
     %Condition for eigenvalues to be real and below -1/1.25
     index_lat(i) = all(abs(imag(eig(A_cl_lat))) < 1e-8) && all(real(eig(A_cl_lat)) <= -0.8);
 
-    eigs_long(:, i) = eig(A_cl_long); % Save Eigenvalues for longitudinal control
+    eigs_long(:, i) = eig(A_cl_long);
     index_long(i) = all(abs(imag(eig(A_cl_long))) < 1e-8) && all(real(eig(A_cl_long)) <= -0.8);
 end
 
@@ -33,11 +30,14 @@ end
 figure(1);
 plot(real(eigs_lat), imag(eigs_lat), 'b.', 'MarkerSize', 6);
 grid on;
+figure(2);
+plot(real(eigs_long), imag(eigs_long), 'b.', 'MarkerSize', 6);
+grid on;
 
 %Find valid values for k3
 index2_lat = find(index_lat ==1);
 k3_valid_lat = k3(index2_lat);
 
 index2_long = find(index_long ==1);
-k3_valid_long = k3(index2_long); 
+k3_valid_long = k3(index2_long);
 

@@ -35,3 +35,7 @@ Nc = -k5*r;
 
 % Control Moments vector
 Gc = [Lc; Mc; Nc];
+Nc = -k5*r;
+
+% Control Moments vector
+Gc = [Lc; Mc; Nc];

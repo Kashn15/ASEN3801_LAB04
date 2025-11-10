@@ -20,8 +20,8 @@ p = var(10); q = var(11); r = var(12);
 
 %Linearized EOM
 x_dot = u; y_dot = v; z_dot = w;
-phi_dot = p; theta_dot = q; psi_dot = r;
-u_dot = -g*theta-(vu/m)*u; v_dot = g*phi-(vu/m)*v; w_dot = Fc(3)*(1/m)-g-(mu/m)*w; 
+phi_dot = p; theta_dot = q; psi_dot = r; 
+u_dot = -g*theta; v_dot = g*phi; w_dot = Fc(3)*(1/m)-g; 
 p_dot = (1/I(1,1))*Gc(1); q_dot = (1/I(2,2))*Gc(2); r_dot = (1/I(3,3))*Gc(3);
 
 %New state variable
